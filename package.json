@@ -1,0 +1,49 @@
+{
+	"name": "@benev/batch",
+	"version": "0.0.0-0",
+	"description": "command line tool for converting batches of media files (sound, video, etc)",
+	"license": "MIT",
+	"author": "Chase Moskal <chasemoskal@gmail.com>",
+	"type": "module",
+	"main": "x/index.js",
+	"bin": "x/cli.js",
+	"files": [
+		"x",
+		"s"
+	],
+	"scripts": {
+		"build": "run-s clean compile",
+		"clean": "rm -rf x && mkdir x",
+		"compile": "tsc",
+		"start": "run-p watch",
+		"watch": "tsc -w",
+		"test": "rm -rf x/assets && node x/cli.js --in assets --out x/assets --format jpg && if [ ! -f 'x/assets/house.jpg' ]; then echo 'expected to find house.jpg, but it was not found'; exit 1; else exit 0; fi"
+	},
+	"dependencies": {
+		"@benev/argv": "^0.1.0",
+		"ffmpeg-static": "^5.2.0",
+		"globby": "^14.0.1",
+		"shelljs": "^0.8.5",
+		"zx": "^8.1.0"
+	},
+	"devDependencies": {
+		"@types/node": "^20.12.12",
+		"@types/shelljs": "^0.8.15",
+		"npm-run-all": "^4.1.5",
+		"typescript": "^5.4.5"
+	},
+	"keywords": [
+		"batch",
+		"media",
+		"converter",
+		"conversion"
+	],
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/benevolent-games/batch.git"
+	},
+	"bugs": {
+		"url": "https://github.com/benevolent-games/batch/issues"
+	},
+	"homepage": "https://github.com/benevolent-games/batch#readme"
+}
