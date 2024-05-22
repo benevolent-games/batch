@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 
-import {cli} from "@benev/argv"
 import {m4a} from "./commands/audio/m4a.js"
+import {cli, deathWithDignity} from "@benev/argv"
+
+deathWithDignity()
 
 await cli(process.argv, {
 	name: "batch",
