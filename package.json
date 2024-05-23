@@ -12,15 +12,16 @@
 		"s"
 	],
 	"scripts": {
-		"build": "run-s clean compile",
+		"build": "run-s clean compile perms",
 		"clean": "rm -rf x && mkdir x",
 		"compile": "tsc",
+		"perms": "chmod -R +x x",
 		"start": "run-p watch",
 		"watch": "tsc -w",
 		"test": "rm -rf x/assets && node x/cli.js --in assets --out x/assets --format jpg && if [ ! -f 'x/assets/house.jpg' ]; then echo 'expected to find house.jpg, but it was not found'; exit 1; else exit 0; fi"
 	},
 	"dependencies": {
-		"@benev/argv": "^0.2.1",
+		"@benev/argv": "^0.3.0",
 		"ffmpeg-static": "^5.2.0",
 		"globby": "^14.0.1",
 		"shelljs": "^0.8.5",

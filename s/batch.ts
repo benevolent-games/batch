@@ -8,6 +8,9 @@ deathWithDignity()
 await cli(process.argv, {
 	name: "batch",
 	commands: {audio: {m4a}},
-	help: `convert and compress media files en mass.`,
+	help: `
+		convert and compress media files en mass.
+		powered by ffmpeg, of course.
+	`,
 }).execute()
 
