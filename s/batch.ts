@@ -14,12 +14,12 @@ await cli(process.argv, {
 	},
 	help: `
 		convert and compress media files en mass.
-			ffmpeg for audio and video.
-			sharp for images.
+		using ffmpeg for audio and video.
+		using sharp for images.
 
-		batch always operates on *directories*.
-			relevant files are recursively read from the --in directory.
-			output is written into the --out directory, but with the same relative directory substructure.
+		batch operates on directories.
+		relevant files are recursively read from the --in directory.
+		output is written into the --out directory, but with the same relative directory substructure.
 	`,
 }).execute()
 
