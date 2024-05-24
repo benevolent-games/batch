@@ -6,6 +6,7 @@ import {command, list, number, param, string} from "@benev/argv"
 
 import {planPaths} from "../../common/plan-paths.js"
 import {basicParams} from "../../common/params/basic-params.js"
+import { findParam } from "../../common/params/find-param.js"
 
 export const webp = command({
 	help: `convert images to webp format.`,
@@ -20,14 +21,7 @@ export const webp = command({
 					throw new Error(`must be integer from 1 to 100`)
 			},
 		}),
-		find: param.default(list(string), "jpg,jpeg,png,webp", {
-			help: `sniff out files with these extensions from the input directory.`,
-			validate: extensions => {
-				if (extensions.length === 0)
-					throw new Error(`you need at least one`)
-				return extensions
-			},
-		}),
+		find: findParam("jpg,jpeg,png,webp"),
 		size: param.optional(number, {
 			validate: n => {
 				if (Number.isSafeInteger(n) && n > 0)

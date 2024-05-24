@@ -4,7 +4,7 @@ import {$, ProcessOutput} from "zx"
 import {ExecutionError, color, command} from "@benev/argv"
 
 import {planPaths} from "../../common/plan-paths.js"
-import {findParam} from "../../common/utils/find-param.js"
+import {findParam} from "../../common/params/find-param.js"
 import {universalStart} from "../../common/universal-start.js"
 import {basicParams} from "../../common/params/basic-params.js"
 import {audioParams} from "../../common/params/audio-params.js"
