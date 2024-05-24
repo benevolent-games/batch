@@ -5,14 +5,13 @@ import {dirname} from "path"
 import {command, list, number, param, string} from "@benev/argv"
 
 import {planPaths} from "../../common/plan-paths.js"
-import {ordinaryParams} from "../../common/params/ordinary-params.js"
-import {essentialParams} from "../../common/params/essential-params.js"
+import {basicParams} from "../../common/params/basic-params.js"
 
 export const webp = command({
 	help: `convert images to webp format.`,
 	args: [],
 	params: {
-		...essentialParams,
+		...basicParams.required,
 		quality: param.required(number, {
 			validate: n => {
 				if (Number.isSafeInteger(n) && n >= 1 && n <= 100)
@@ -37,10 +36,9 @@ export const webp = command({
 					throw new Error(`must be integer greater than 0`)
 			},
 		}),
-		...ordinaryParams,
+		...basicParams.remaining,
 	},
 	execute: async({params}) => {
-
 		const paths = await planPaths({
 			inputs: {
 				directory: params.in,

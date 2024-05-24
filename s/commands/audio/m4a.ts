@@ -7,19 +7,19 @@ import {color, command} from "@benev/argv"
 import {planPaths} from "../../common/plan-paths.js"
 import {findParam} from "../../common/utils/find-param.js"
 import {universalStart} from "../../common/universal-start.js"
+import {basicParams} from "../../common/params/basic-params.js"
 import {audioParams} from "../../common/params/audio-params.js"
 import {concurrently} from "../../common/utils/concurrently.js"
-import {ordinaryParams} from "../../common/params/ordinary-params.js"
-import {essentialParams} from "../../common/params/essential-params.js"
 
 export const m4a = command({
 	help: `convert audio to m4a format, aac codec.`,
 	args: [],
 	params: {
-		...essentialParams,
+		...basicParams.required,
+		...audioParams.required,
 		find: findParam("wav,mp3,m4a,ogg"),
-		...audioParams,
-		...ordinaryParams,
+		...audioParams.remaining,
+		...basicParams.remaining,
 	},
 	execute: async({params}) => {
 		const {dryRun, loggingEnabled} = universalStart(params)
@@ -47,7 +47,10 @@ export const m4a = command({
 			})
 		)
 
-		await concurrently(params["concurrency"], tasks)
+		for (const task of tasks)
+			await task()
+
+		// await concurrently(params["concurrency"], tasks)
 	},
 })
 
@@ -79,9 +82,9 @@ async function convert_m4a_audio({
 				-b:a ${kbps}k \\
 				${mono ? ["-ac", "1"] : []} \\
 				-y \\
-				-loglevel quiet \\
 				${outpath}
 		`
 	}
 }
 
+				// -loglevel quiet \\
