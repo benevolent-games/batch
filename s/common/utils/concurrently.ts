@@ -17,8 +17,10 @@ export async function concurrently<T>(
 			const done = finished.length === originalTaskCount
 			const tasksAreAvailable = tasks.length > 0
 			const belowCapacity = happening < limit
+
 			if (done)
 				return resolve(finished)
+
 			else if (tasksAreAvailable && belowCapacity) {
 				const task = tasks.pop()!
 				happening++
@@ -33,7 +35,9 @@ export async function concurrently<T>(
 					})
 			}
 		}
-		check()
+
+		for (const _ of Array(limit))
+			check()
 	})
 }
 
