@@ -1,60 +1,87 @@
 
 import {$} from "zx"
-import path from "path"
-import shell from "shelljs"
-import {globby} from "globby"
+import {dirname} from "path"
 import ffmpeg from "ffmpeg-static"
-import {color, command, list, param, string} from "@benev/argv"
+import {color, command} from "@benev/argv"
 
-import {audioParams} from "./common/params.js"
-import {replaceExtension} from "./common/replace-extension.js"
+import {planPaths} from "../../common/plan-paths.js"
+import {findParam} from "../../common/utils/find-param.js"
+import {universalStart} from "../../common/universal-start.js"
+import {audioParams} from "../../common/params/audio-params.js"
+import {concurrently} from "../../common/utils/concurrently.js"
+import {ordinaryParams} from "../../common/params/ordinary-params.js"
+import {essentialParams} from "../../common/params/essential-params.js"
 
 export const m4a = command({
-	help: `convert audio files from indir, outputting them into outdir.`,
+	help: `convert audio to m4a format, aac codec.`,
 	args: [],
 	params: {
+		...essentialParams,
+		find: findParam("wav,mp3,m4a,ogg"),
 		...audioParams,
-		accept: param.default(list(string), "wav,mp3,m4a,ogg", {
-			help: `sniff out files with these extensions from the input directory.`,
-			validate: extensions => {
-				if (extensions.length === 0)
-					throw new Error("you need at least one")
-				return extensions
-			},
-		}),
+		...ordinaryParams,
 	},
 	execute: async({params}) => {
-		const patterns = [`**/*.{${params.accept.join(",")}}`]
-		const cwd = path.resolve(params.indir)
-		const filepaths = await globby(patterns, {cwd})
+		const {dryRun, loggingEnabled} = universalStart(params)
 
-		if (params["dry-run"]) {
-			console.log(color.yellow("dry-run"))
-		}
+		const paths = await planPaths({
+			inputs: {
+				directory: params["in"],
+				extensions: params["find"],
+			},
+			outputs: {
+				directory: params["out"],
+				suffix: params["suffix"],
+				extension: "webp",
+			},
+		})
 
-		for (const filepath of filepaths) {
-			const infile = path.join(params.indir, filepath)
-			const outfile = replaceExtension(
-				path.join(params.outdir, filepath),
-				"m4a",
-				params.suffix,
-			)
-			console.log(` in ${color.blue(infile)}`)
-			console.log(`out ${color.green(outfile)}`)
-			if (!params["dry-run"]) {
-				shell.mkdir("-p", path.dirname(outfile))
-				await $`
-					${ffmpeg} \\
-						-i ${infile} \\
-						-c:a aac \\
-						-b:a ${params.kbps}k \\
-						${params.mono ? ["-ac", "1"] : []} \\
-						-y \\
-						-loglevel quiet \\
-						${outfile}
-				`
-			}
-		}
+		const tasks = paths.map(([inpath, outpath]) =>
+			() => convert_m4a_audio({
+				dryRun,
+				inpath,
+				outpath,
+				loggingEnabled,
+				kbps: params["kbps"],
+				mono: params["mono"],
+			})
+		)
+
+		await concurrently(params["concurrency"], tasks)
 	},
 })
+
+/////////////////////////////////////////////////
+/////////////////////////////////////////////////
+
+async function convert_m4a_audio({
+		inpath, outpath, dryRun, loggingEnabled, kbps, mono,
+	}: {
+		inpath: string
+		outpath: string
+		dryRun: boolean
+		loggingEnabled: boolean
+		kbps: number
+		mono: boolean
+	}) {
+
+	if (loggingEnabled) {
+		console.log(` in ${color.blue(inpath)}`)
+		console.log(`out ${color.green(outpath)}`)
+	}
+
+	if (!dryRun) {
+		await $`mkdir -p ${dirname(outpath)}`
+		await $`
+			${ffmpeg} \\
+				-i ${inpath} \\
+				-c:a aac \\
+				-b:a ${kbps}k \\
+				${mono ? ["-ac", "1"] : []} \\
+				-y \\
+				-loglevel quiet \\
+				${outpath}
+		`
+	}
+}
 

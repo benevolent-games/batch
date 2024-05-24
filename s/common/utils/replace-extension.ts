@@ -1,9 +1,13 @@
 
-export function replaceExtension(
+export function replaceExtension({
+		filepath,
+		suffix,
+		extension,
+	}: {
 		filepath: string,
-		extension: string,
 		suffix?: string,
-	) {
+		extension: string,
+	}) {
 
 	if (filepath.includes(".")) {
 		const parts = filepath.split(".")
