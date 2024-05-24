@@ -1,7 +1,7 @@
 
 import path from "path"
 import {globby} from "globby"
-import {replaceExtension} from "./utils/replace-extension.js"
+import {replaceExtension} from "../tools/replace-extension.js"
 
 export async function planPaths({
 		inputs,

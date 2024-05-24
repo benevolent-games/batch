@@ -4,12 +4,12 @@ import {$, ProcessOutput} from "zx"
 import {ExecutionError, color, command} from "@benev/argv"
 
 import {planPaths} from "../../common/plan-paths.js"
+import {concurrently} from "../../tools/concurrently.js"
 import {findParam} from "../../common/params/find-param.js"
 import {universalStart} from "../../common/universal-start.js"
 import {basicParams} from "../../common/params/basic-params.js"
 import {audioParams} from "../../common/params/audio-params.js"
-import {concurrently} from "../../common/utils/concurrently.js"
-import {assertDirectories} from "../../common/utils/assert-directories.js"
+import {assertDirectories} from "../../tools/assert-directories.js"
 
 export const m4a = command({
 	help: `convert audio to m4a format, aac codec.`,
