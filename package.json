@@ -6,7 +6,7 @@
 	"author": "Chase Moskal <chasemoskal@gmail.com>",
 	"type": "module",
 	"main": "x/index.js",
-	"bin": "x/cli.js",
+	"bin": "x/batch.js",
 	"files": [
 		"x",
 		"s"
