@@ -32,7 +32,7 @@ export const m4a = command({
 			outputs: {
 				directory: params["out"],
 				suffix: params["suffix"],
-				extension: "webp",
+				extension: "m4a",
 			},
 		})
 
@@ -47,10 +47,7 @@ export const m4a = command({
 			})
 		)
 
-		for (const task of tasks)
-			await task()
-
-		// await concurrently(params["concurrency"], tasks)
+		await concurrently(params["concurrency"], tasks)
 	},
 })
 
@@ -82,9 +79,9 @@ async function convert_m4a_audio({
 				-b:a ${kbps}k \\
 				${mono ? ["-ac", "1"] : []} \\
 				-y \\
+				-loglevel quiet \\
 				${outpath}
 		`
 	}
 }
 
-				// -loglevel quiet \\
