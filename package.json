@@ -23,6 +23,11 @@
 	},
 	"dependencies": {
 		"@benev/argv": "^0.3.1",
+		"@gltf-transform/cli": "^4.0.1",
+		"@gltf-transform/core": "^4.0.1",
+		"@gltf-transform/extensions": "^4.0.1",
+		"@gltf-transform/functions": "^4.0.1",
+		"draco3dgltf": "^1.5.7",
 		"ffmpeg-static": "^5.2.0",
 		"globby": "^14.0.1",
 		"sharp": "^0.33.4",
