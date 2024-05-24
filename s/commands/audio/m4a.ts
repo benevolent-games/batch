@@ -1,8 +1,7 @@
 
-import {$} from "zx"
-import {dirname} from "path"
 import ffmpeg from "ffmpeg-static"
-import {color, command} from "@benev/argv"
+import {$, ProcessOutput} from "zx"
+import {ExecutionError, color, command} from "@benev/argv"
 
 import {planPaths} from "../../common/plan-paths.js"
 import {findParam} from "../../common/utils/find-param.js"
@@ -10,6 +9,7 @@ import {universalStart} from "../../common/universal-start.js"
 import {basicParams} from "../../common/params/basic-params.js"
 import {audioParams} from "../../common/params/audio-params.js"
 import {concurrently} from "../../common/utils/concurrently.js"
+import {assertDirectories} from "../../common/utils/assert-directories.js"
 
 export const m4a = command({
 	help: `convert audio to m4a format, aac codec.`,
@@ -36,6 +36,8 @@ export const m4a = command({
 			},
 		})
 
+		await assertDirectories(paths.map(([,outpath]) => outpath))
+
 		const tasks = paths.map(([inpath, outpath]) =>
 			() => convert_m4a_audio({
 				dryRun,
@@ -55,14 +57,14 @@ export const m4a = command({
 /////////////////////////////////////////////////
 
 async function convert_m4a_audio({
-		inpath, outpath, dryRun, loggingEnabled, kbps, mono,
+		inpath, outpath, kbps, mono, dryRun, loggingEnabled,
 	}: {
 		inpath: string
 		outpath: string
-		dryRun: boolean
-		loggingEnabled: boolean
 		kbps: number
 		mono: boolean
+		dryRun: boolean
+		loggingEnabled: boolean
 	}) {
 
 	if (loggingEnabled) {
@@ -71,17 +73,23 @@ async function convert_m4a_audio({
 	}
 
 	if (!dryRun) {
-		await $`mkdir -p ${dirname(outpath)}`
-		await $`
-			${ffmpeg} \\
-				-i ${inpath} \\
-				-c:a aac \\
-				-b:a ${kbps}k \\
-				${mono ? ["-ac", "1"] : []} \\
-				-y \\
-				-loglevel quiet \\
-				${outpath}
-		`
+		try {
+			await $`
+				${ffmpeg} \\
+					-i ${inpath} \\
+					-c:a aac \\
+					-b:a ${kbps}k \\
+					${mono ? ["-ac", "1"] : []} \\
+					-y \\
+					-loglevel error \\
+					${outpath}
+			`.quiet()
+		}
+		catch(error) {
+			if (error instanceof ProcessOutput)
+				throw new ExecutionError(`ffmpeg error: ${error.stderr}`)
+			else throw error
+		}
 	}
 }
 
