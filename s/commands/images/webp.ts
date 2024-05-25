@@ -1,12 +1,13 @@
 
-import {$} from "zx"
 import sharp from "sharp"
-import {dirname} from "path"
-import {command, list, number, param, string} from "@benev/argv"
+import {command, number, param} from "@benev/argv"
 
-import {planPaths} from "../../common/plan-paths.js"
+import {pathing} from "../../common/pathing.js"
+import {Logger} from "../../common/logger.js"
+import {commonStart} from "../../common/common-start.js"
+import {findParam} from "../../common/params/find-param.js"
 import {basicParams} from "../../common/params/basic-params.js"
-import { findParam } from "../../common/params/find-param.js"
+import {assertDirectories} from "../../tools/assert-directories.js"
 
 export const webp = command({
 	help: `convert images to webp format.`,
@@ -33,22 +34,18 @@ export const webp = command({
 		...basicParams.remaining,
 	},
 	execute: async({params}) => {
-		const paths = await planPaths({
-			inputs: {
-				directory: params.in,
-				extensions: params.find,
-			},
-			outputs: {
-				directory: params.out,
-				suffix: params.suffix,
-				extension: "webp",
-			},
-		})
+		const {dryRun, logger} = commonStart(params)
+		const paths = await pathing("webp", params)
+
+		const outpaths = paths.map(([,outpath]) => outpath)
+		await assertDirectories(outpaths)
 
 		sharp.concurrency(params.concurrency)
 
 		await Promise.all(paths.map(async([inpath, outpath]) => {
 			await convert_webp_image({
+				dryRun,
+				logger,
 				inpath,
 				outpath,
 				size: params.size,
@@ -62,15 +59,20 @@ export const webp = command({
 //////////////////////////////////////////////////////////////
 
 async function convert_webp_image({
-		inpath, outpath, quality, size,
+		inpath, outpath, quality, size, dryRun, logger,
 	}: {
+		dryRun: boolean
+		logger: Logger
 		inpath: string
 		outpath: string
 		quality: number
 		size?: number
 	}) {
 
-	await $`mkdir -p ${dirname(outpath)}`
+	logger.inOut(inpath, outpath)
+
+	if (dryRun)
+		return
 
 	return pipe(sharp(inpath))
 		.to(img => img.rotate())

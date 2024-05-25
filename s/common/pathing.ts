@@ -3,7 +3,24 @@ import path from "path"
 import {globby} from "globby"
 import {replaceExtension} from "../tools/replace-extension.js"
 
-export async function planPaths({
+export const pathing = async(extension: string, params: {
+	in: string
+	out: string
+	find: string[]
+	suffix: string | undefined
+}) => planPaths({
+	inputs: {
+		directory: params.in,
+		extensions: params.find,
+	},
+	outputs: {
+		directory: params.out,
+		suffix: params.suffix,
+		extension,
+	},
+})
+
+async function planPaths({
 		inputs,
 		outputs,
 	}: {

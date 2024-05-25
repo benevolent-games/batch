@@ -1,7 +1,8 @@
 
 import {color} from "@benev/argv"
+import {DisabledLogger, Logger} from "./logger.js"
 
-export function universalStart(params: {
+export function commonStart(params: {
 		"dry-run": boolean
 		verbose: boolean
 	}) {
@@ -11,7 +12,9 @@ export function universalStart(params: {
 
 	return {
 		dryRun: params["dry-run"],
-		loggingEnabled: params.verbose || params["dry-run"],
+		logger: (params.verbose || params["dry-run"])
+			? new Logger()
+			: new DisabledLogger(),
 	}
 }
 
