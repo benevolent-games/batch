@@ -2,10 +2,11 @@
 import sharp from "sharp"
 import {command, number, param} from "@benev/argv"
 
-import {pathing} from "../../common/pathing.js"
 import {Logger} from "../../common/logger.js"
-import {commonStart} from "../../common/common-start.js"
+import {pathing} from "../../common/pathing.js"
+import {isDryRun} from "../../tools/is-dry-run.js"
 import {findParam} from "../../common/params/find-param.js"
+import {prepareLogger} from "../../common/prepare-logger.js"
 import {basicParams} from "../../common/params/basic-params.js"
 import {assertDirectories} from "../../tools/assert-directories.js"
 
@@ -34,8 +35,10 @@ export const webp = command({
 		...basicParams.remaining,
 	},
 	execute: async({params}) => {
-		const {dryRun, logger} = commonStart(params)
+		const logger = prepareLogger(params)
 		const paths = await pathing("webp", params)
+		if (isDryRun(paths, logger, params))
+			return
 
 		const outpaths = paths.map(([,outpath]) => outpath)
 		await assertDirectories(outpaths)
@@ -44,7 +47,6 @@ export const webp = command({
 
 		await Promise.all(paths.map(async([inpath, outpath]) => {
 			await convert_webp_image({
-				dryRun,
 				logger,
 				inpath,
 				outpath,
@@ -59,9 +61,8 @@ export const webp = command({
 //////////////////////////////////////////////////////////////
 
 async function convert_webp_image({
-		inpath, outpath, quality, size, dryRun, logger,
+		inpath, outpath, quality, size, logger,
 	}: {
-		dryRun: boolean
 		logger: Logger
 		inpath: string
 		outpath: string
@@ -69,10 +70,8 @@ async function convert_webp_image({
 		size?: number
 	}) {
 
-	logger.inOut(inpath, outpath)
-
-	if (dryRun)
-		return
+	logger.in(inpath)
+	logger.out(outpath)
 
 	return pipe(sharp(inpath))
 		.to(img => img.rotate())

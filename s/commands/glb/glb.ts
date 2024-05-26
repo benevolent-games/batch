@@ -1,31 +1,38 @@
 
-import {choice, command, param, string} from "@benev/argv"
+import {Transform} from "@gltf-transform/core"
+import {dedup} from "@gltf-transform/functions"
+import {ExecutionError, Type, choice, command, param, string} from "@benev/argv"
 
+import {GlbIo} from "./parts/glb_io.js"
+import {human} from "../../tools/human.js"
 import {Logger} from "../../common/logger.js"
 import {pathing} from "../../common/pathing.js"
+import {tiers, TierName} from "./parts/tiers.js"
+import {isDryRun} from "../../tools/is-dry-run.js"
+import {concurrently} from "../../tools/concurrently.js"
 import {findParam} from "../../common/params/find-param.js"
+import {prepareLogger} from "../../common/prepare-logger.js"
 import {basicParams} from "../../common/params/basic-params.js"
-import { concurrently } from "../../tools/concurrently.js"
-import { assertDirectories } from "../../tools/assert-directories.js"
-import { commonStart } from "../../common/common-start.js"
-import { GlbIo } from "./parts/glb_io.js"
-import { cloneDocument, dedup } from "@gltf-transform/functions"
-import { tiers } from "./parts/tiers.js"
+import {assertDirectories} from "../../tools/assert-directories.js"
 
 export const glb = command({
-	help: `optimize glbs`,
+	help: `optimize and process glbs`,
 	args: [],
 	params: {
 		...basicParams.required,
 		find: findParam("glb"),
-		tier: param.optional(string, choice(
-			["potato", "mid", "fancy"],
-		)),
+		tier: param.required<TierName>(
+			string as Type<TierName>,
+			choice(Object.keys(tiers) as TierName[])
+		),
 		...basicParams.remaining,
 	},
 	execute: async({params}) => {
-		const {dryRun, logger} = commonStart(params)
+		const logger = prepareLogger(params)
 		const paths = await pathing("glb", params)
+		if (isDryRun(paths, logger, params))
+			return
+
 		const outpaths = paths.map(([,outpath]) => outpath)
 		await assertDirectories(outpaths)
 
@@ -34,10 +41,10 @@ export const glb = command({
 		const tasks = paths.map(([inpath, outpath]) =>
 			() => convert_glb({
 				io,
-				dryRun,
-				logger,
 				inpath,
 				outpath,
+				logger,
+				transforms: tiers[params.tier],
 			})
 		)
 
@@ -46,34 +53,38 @@ export const glb = command({
 })
 
 //////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
 
 export async function convert_glb({
-		io, inpath, outpath, dryRun, logger,
+		io, logger, inpath, outpath, transforms,
 	}: {
 		io: GlbIo
+		logger: Logger
 		inpath: string
 		outpath: string
-		dryRun: boolean
-		logger: Logger
+		transforms: Transform[]
 	}) {
 
-	const original = await io.read(inpath)
+	try {
+		logger.in(inpath)
+		const original = await io.read(inpath)
+		await original.document.transform(dedup())
 
-	await original.document.transform(dedup())
+		const document = original.document
+		// const document = cloneDocument(original.document)
 
-	// for (const [quality, transforms] of Object.entries(tiers)) {
-	// 	const document = cloneDocument(original.document)
-	// 	await document.transform(...transforms)
-	// 	const report = await gio.write(outpath(quality), document)
+		await document.transform(...transforms)
 
-	// 	log_glb(report)
+		const report = await io.write(outpath, document)
+		logger.out(outpath, human.bytes(report.binary.byteLength))
+	}
+	catch(error) {
+		if (error instanceof Error)
+			throw new ExecutionError(`glb error: ${error.message}`)
+		else throw error
+	}
 
-	// 	if (!!verbose && quality === "fancy") {
-	// 		for (const node of document.getRoot().listNodes()) {
-	// 			console.log(` - ${node.getName()}`)
-	// 		}
-	// 	}
-	// }
+	// // print out glb content
+	// for (const node of document.getRoot().listNodes())
+	// 	console.log(` - ${node.getName()}`)
 }
 

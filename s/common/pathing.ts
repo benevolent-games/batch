@@ -2,13 +2,14 @@
 import path from "path"
 import {globby} from "globby"
 import {replaceExtension} from "../tools/replace-extension.js"
+import { ExecutionError } from "@benev/argv"
 
 export const pathing = async(extension: string, params: {
-	in: string
-	out: string
-	find: string[]
-	suffix: string | undefined
-}) => planPaths({
+		in: string
+		out: string
+		find: string[]
+		suffix: string | undefined
+	}) => planPaths({
 	inputs: {
 		directory: params.in,
 		extensions: params.find,
@@ -35,10 +36,15 @@ async function planPaths({
 		}
 	}): Promise<[string, string][]> {
 
+	console.log(inputs)
+
 	const found = await globby(
 		[`**/*.{${inputs.extensions.join(",")}}`],
 		{cwd: path.resolve(inputs.directory)},
 	)
+
+	if (found.length === 0)
+		throw new ExecutionError(`no files found, looked for "${inputs.extensions.join(",")}" under "${inputs.directory}"`)
 
 	return found.map(relativePath => {
 		const inpath = path.join(inputs.directory, relativePath)

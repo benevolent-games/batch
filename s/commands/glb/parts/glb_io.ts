@@ -6,7 +6,6 @@ import {ALL_EXTENSIONS} from "@gltf-transform/extensions"
 import {NodeIO, Document, Logger} from "@gltf-transform/core"
 
 export class GlbIo {
-
 	static async make() {
 		return new this(new NodeIO()
 			.registerExtensions(ALL_EXTENSIONS)

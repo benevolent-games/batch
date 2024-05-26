@@ -10,9 +10,12 @@ export class Logger {
 		console.error(s)
 	}
 
-	inOut(inpath: string, outpath: string) {
+	in(inpath: string) {
 		console.log(` in ${color.blue(inpath)}`)
-		console.log(`out ${color.green(outpath)}`)
+	}
+
+	out(outpath: string, report: string = "") {
+		console.log(`out ${color.green(outpath)} ${report}`)
 	}
 }
 

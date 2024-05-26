@@ -5,9 +5,10 @@ import {ExecutionError, command} from "@benev/argv"
 
 import {Logger} from "../../common/logger.js"
 import {pathing} from "../../common/pathing.js"
-import {commonStart} from "../../common/common-start.js"
+import {isDryRun} from "../../tools/is-dry-run.js"
 import {concurrently} from "../../tools/concurrently.js"
 import {findParam} from "../../common/params/find-param.js"
+import {prepareLogger} from "../../common/prepare-logger.js"
 import {basicParams} from "../../common/params/basic-params.js"
 import {audioParams} from "../../common/params/audio-params.js"
 import {assertDirectories} from "../../tools/assert-directories.js"
@@ -23,15 +24,16 @@ export const m4a = command({
 		...basicParams.remaining,
 	},
 	execute: async({params}) => {
-		const {dryRun, logger} = commonStart(params)
+		const logger = prepareLogger(params)
 		const paths = await pathing("m4a", params)
+		if (isDryRun(paths, logger, params))
+			return
 
 		const outpaths = paths.map(([,outpath]) => outpath)
 		await assertDirectories(outpaths)
 
 		const tasks = paths.map(([inpath, outpath]) =>
 			() => convert_m4a_audio({
-				dryRun,
 				logger,
 				inpath,
 				outpath,
@@ -48,20 +50,17 @@ export const m4a = command({
 /////////////////////////////////////////////////
 
 async function convert_m4a_audio({
-		inpath, outpath, kbps, mono, dryRun, logger,
+		inpath, outpath, kbps, mono, logger,
 	}: {
 		inpath: string
 		outpath: string
 		kbps: number
 		mono: boolean
-		dryRun: boolean
 		logger: Logger
 	}) {
 
-	logger.inOut(inpath, outpath)
-
-	if (dryRun)
-		return
+	logger.in(inpath)
+	logger.out(outpath)
 
 	try {
 		await $`

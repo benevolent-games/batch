@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import {glb} from "./commands/glb/glb.js"
 import {m4a} from "./commands/audio/m4a.js"
 import {webp} from "./commands/images/webp.js"
 import {cli, deathWithDignity} from "@benev/argv"
@@ -11,6 +12,7 @@ await cli(process.argv, {
 	commands: {
 		images: {webp},
 		audio: {m4a},
+		"3d": {glb},
 	},
 	help: `
 		convert and compress media files en mass.
