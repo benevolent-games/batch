@@ -43,7 +43,7 @@ async function planPaths({
 
 	const found = await globby(
 		[`**/*.${extensionGlob}`],
-		{cwd: path.resolve(inputs.directory)},
+		{cwd: path.resolve(inputs.directory), caseSensitiveMatch: false},
 	)
 
 	if (found.length === 0)
