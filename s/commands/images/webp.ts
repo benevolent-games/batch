@@ -46,7 +46,7 @@ export const webp = command({
 	},
 	execute: async({params}) => {
 		const logger = prepareLogger(params)
-		const paths = await pathing("webp", params)
+		const paths = await pathing(() => "webp", params)
 		if (isDryRun(paths, logger, params))
 			return
 

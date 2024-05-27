@@ -33,7 +33,7 @@ export const m4a = command({
 	},
 	execute: async({params}) => {
 		const logger = prepareLogger(params)
-		const paths = await pathing("m4a", params)
+		const paths = await pathing(() => "m4a", params)
 		if (isDryRun(paths, logger, params))
 			return
 

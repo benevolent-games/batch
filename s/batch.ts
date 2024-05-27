@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import {copy} from "./commands/copy.js"
 import {glb} from "./commands/3d/glb.js"
 import {m4a} from "./commands/audio/m4a.js"
 import {webp} from "./commands/images/webp.js"
@@ -10,6 +11,7 @@ deathWithDignity()
 await cli(process.argv, {
 	name: "batch",
 	commands: {
+		copy,
 		"3d": {glb},
 		"audio": {m4a},
 		"images": {webp},

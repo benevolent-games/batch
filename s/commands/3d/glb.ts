@@ -34,7 +34,7 @@ export const glb = command({
 	},
 	execute: async({params}) => {
 		const logger = prepareLogger(params)
-		const paths = await pathing("glb", params)
+		const paths = await pathing(() => "glb", params)
 		if (isDryRun(paths, logger, params))
 			return
 

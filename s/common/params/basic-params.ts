@@ -21,6 +21,7 @@ export const basicParams = {
 				glob patterns to ignore from input, relative to the input directory. comma-separated. eg,
 					--ignores="nope,**/_*"
 						this would ignore a "nope" directory directly under the input directory, and anything starting with an underscore.
+					don't forget to quote globs or your shell might bungle it.
 			`}),
 
 		"suffix":
