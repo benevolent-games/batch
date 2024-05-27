@@ -1,15 +1,25 @@
 
 import ffmpeg from "ffmpeg-static"
 import {$, ProcessOutput} from "zx"
-import {ExecutionError, color, command} from "@benev/argv"
+import {ExecutionError, command} from "@benev/argv"
 
-import {planPaths} from "../../common/plan-paths.js"
+import {Logger} from "../../common/logger.js"
+import {pathing} from "../../common/pathing.js"
+import {isDryRun} from "../../tools/is-dry-run.js"
+import {concurrently} from "../../tools/concurrently.js"
 import {findParam} from "../../common/params/find-param.js"
-import {universalStart} from "../../common/universal-start.js"
+import {prepareLogger} from "../../common/prepare-logger.js"
 import {basicParams} from "../../common/params/basic-params.js"
 import {audioParams} from "../../common/params/audio-params.js"
-import {concurrently} from "../../common/utils/concurrently.js"
-import {assertDirectories} from "../../common/utils/assert-directories.js"
+import {assertDirectories} from "../../tools/assert-directories.js"
+
+export const audioInputTypes = [
+	"wav",
+	"mp3",
+	"m4a",
+	"mka",
+	"ogg",
+]
 
 export const m4a = command({
 	help: `convert audio to m4a format, aac codec.`,
@@ -17,33 +27,24 @@ export const m4a = command({
 	params: {
 		...basicParams.required,
 		...audioParams.required,
-		find: findParam("wav,mp3,m4a,ogg"),
+		find: findParam(audioInputTypes, audioInputTypes.join(",")),
 		...audioParams.remaining,
 		...basicParams.remaining,
 	},
 	execute: async({params}) => {
-		const {dryRun, loggingEnabled} = universalStart(params)
+		const logger = prepareLogger(params)
+		const paths = await pathing(() => "m4a", params)
+		if (isDryRun(paths, logger, params))
+			return
 
-		const paths = await planPaths({
-			inputs: {
-				directory: params["in"],
-				extensions: params["find"],
-			},
-			outputs: {
-				directory: params["out"],
-				suffix: params["suffix"],
-				extension: "m4a",
-			},
-		})
-
-		await assertDirectories(paths.map(([,outpath]) => outpath))
+		const outpaths = paths.map(([,outpath]) => outpath)
+		await assertDirectories(outpaths)
 
 		const tasks = paths.map(([inpath, outpath]) =>
 			() => convert_m4a_audio({
-				dryRun,
+				logger,
 				inpath,
 				outpath,
-				loggingEnabled,
 				kbps: params["kbps"],
 				mono: params["mono"],
 			})
@@ -57,39 +58,34 @@ export const m4a = command({
 /////////////////////////////////////////////////
 
 async function convert_m4a_audio({
-		inpath, outpath, kbps, mono, dryRun, loggingEnabled,
+		inpath, outpath, kbps, mono, logger,
 	}: {
 		inpath: string
 		outpath: string
 		kbps: number
 		mono: boolean
-		dryRun: boolean
-		loggingEnabled: boolean
+		logger: Logger
 	}) {
 
-	if (loggingEnabled) {
-		console.log(` in ${color.blue(inpath)}`)
-		console.log(`out ${color.green(outpath)}`)
-	}
+	logger.in(inpath)
+	logger.out(outpath)
 
-	if (!dryRun) {
-		try {
-			await $`
-				${ffmpeg} \\
-					-i ${inpath} \\
-					-c:a aac \\
-					-b:a ${kbps}k \\
-					${mono ? ["-ac", "1"] : []} \\
-					-y \\
-					-loglevel error \\
-					${outpath}
-			`.quiet()
-		}
-		catch(error) {
-			if (error instanceof ProcessOutput)
-				throw new ExecutionError(`ffmpeg error: ${error.stderr}`)
-			else throw error
-		}
+	try {
+		await $`
+			${ffmpeg} \\
+				-i ${inpath} \\
+				-c:a aac \\
+				-b:a ${kbps}k \\
+				${mono ? ["-ac", "1"] : []} \\
+				-y \\
+				-loglevel error \\
+				${outpath}
+		`.quiet()
+	}
+	catch(error) {
+		if (error instanceof ProcessOutput)
+			throw new ExecutionError(`ffmpeg error: ${error.stderr}`)
+		else throw error
 	}
 }
 

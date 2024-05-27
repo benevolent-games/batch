@@ -1,6 +1,6 @@
 
 import {availableParallelism} from "os"
-import {number, param, string} from "@benev/argv"
+import {list, number, param, string} from "@benev/argv"
 
 export const basicParams = {
 	required: {
@@ -16,6 +16,14 @@ export const basicParams = {
 	},
 
 	remaining: {
+		"ignores":
+			param.optional(list(string), {help: `
+				glob patterns to ignore from input, relative to the input directory. comma-separated. eg,
+					--ignores="nope,**/_*"
+						this would ignore a "nope" directory directly under the input directory, and anything starting with an underscore.
+					don't forget to quote globs or your shell might bungle it.
+			`}),
+
 		"suffix":
 			param.optional(string, {help: `
 				insert a string into the output filename. eg,

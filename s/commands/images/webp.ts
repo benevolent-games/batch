@@ -1,12 +1,23 @@
 
-import {$} from "zx"
 import sharp from "sharp"
-import {dirname} from "path"
-import {command, list, number, param, string} from "@benev/argv"
+import {command, number, param} from "@benev/argv"
 
-import {planPaths} from "../../common/plan-paths.js"
+import {Logger} from "../../common/logger.js"
+import {pathing} from "../../common/pathing.js"
+import {isDryRun} from "../../tools/is-dry-run.js"
+import {findParam} from "../../common/params/find-param.js"
+import {prepareLogger} from "../../common/prepare-logger.js"
 import {basicParams} from "../../common/params/basic-params.js"
-import { findParam } from "../../common/params/find-param.js"
+import {assertDirectories} from "../../tools/assert-directories.js"
+
+export const imageInputTypes = [
+	"jpg",
+	"jpeg",
+	"png",
+	"webp",
+	"tiff",
+	"avif",
+]
 
 export const webp = command({
 	help: `convert images to webp format.`,
@@ -21,8 +32,9 @@ export const webp = command({
 					throw new Error(`must be integer from 1 to 100`)
 			},
 		}),
-		find: findParam("jpg,jpeg,png,webp"),
+		find: findParam(imageInputTypes, imageInputTypes.join(",")),
 		size: param.optional(number, {
+			help: `maximum dimensions for each image. if provided, images larger than this number of pixels (along either axis), will be resized so that they fit into a square of this size.`,
 			validate: n => {
 				if (Number.isSafeInteger(n) && n > 0)
 					return n
@@ -33,22 +45,19 @@ export const webp = command({
 		...basicParams.remaining,
 	},
 	execute: async({params}) => {
-		const paths = await planPaths({
-			inputs: {
-				directory: params.in,
-				extensions: params.find,
-			},
-			outputs: {
-				directory: params.out,
-				suffix: params.suffix,
-				extension: "webp",
-			},
-		})
+		const logger = prepareLogger(params)
+		const paths = await pathing(() => "webp", params)
+		if (isDryRun(paths, logger, params))
+			return
+
+		const outpaths = paths.map(([,outpath]) => outpath)
+		await assertDirectories(outpaths)
 
 		sharp.concurrency(params.concurrency)
 
 		await Promise.all(paths.map(async([inpath, outpath]) => {
 			await convert_webp_image({
+				logger,
 				inpath,
 				outpath,
 				size: params.size,
@@ -62,15 +71,17 @@ export const webp = command({
 //////////////////////////////////////////////////////////////
 
 async function convert_webp_image({
-		inpath, outpath, quality, size,
+		inpath, outpath, quality, size, logger,
 	}: {
+		logger: Logger
 		inpath: string
 		outpath: string
 		quality: number
 		size?: number
 	}) {
 
-	await $`mkdir -p ${dirname(outpath)}`
+	logger.in(inpath)
+	logger.out(outpath)
 
 	return pipe(sharp(inpath))
 		.to(img => img.rotate())
