@@ -29,7 +29,7 @@ export const glb = command({
 			"webp",
 			choice(textureFormats as TextureFormat[]),
 		),
-		"find": findParam("glb"),
+		"find": findParam(["glb"], "glb"),
 		...basicParams.remaining,
 	},
 	execute: async({params}) => {

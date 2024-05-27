@@ -9,11 +9,13 @@ export const pathing = async(extension: string, params: {
 		in: string
 		out: string
 		find: string[]
+		ignores: string[] | undefined
 		suffix: string | undefined
 	}) => planPaths({
 	inputs: {
 		directory: params.in,
 		extensions: params.find,
+		ignores: params.ignores ?? [],
 	},
 	outputs: {
 		directory: params.out,
@@ -29,6 +31,7 @@ async function planPaths({
 		inputs: {
 			directory: string
 			extensions: string[]
+			ignores: string[]
 		}
 		outputs: {
 			suffix?: string
@@ -43,7 +46,11 @@ async function planPaths({
 
 	const found = await globby(
 		[`**/*.${extensionGlob}`],
-		{cwd: path.resolve(inputs.directory), caseSensitiveMatch: false},
+		{
+			cwd: path.resolve(inputs.directory),
+			caseSensitiveMatch: false,
+			ignore: inputs.ignores,
+		},
 	)
 
 	if (found.length === 0)

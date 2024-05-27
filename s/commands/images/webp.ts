@@ -10,6 +10,15 @@ import {prepareLogger} from "../../common/prepare-logger.js"
 import {basicParams} from "../../common/params/basic-params.js"
 import {assertDirectories} from "../../tools/assert-directories.js"
 
+export const imageInputTypes = [
+	"jpg",
+	"jpeg",
+	"png",
+	"webp",
+	"tiff",
+	"avif",
+]
+
 export const webp = command({
 	help: `convert images to webp format.`,
 	args: [],
@@ -23,8 +32,9 @@ export const webp = command({
 					throw new Error(`must be integer from 1 to 100`)
 			},
 		}),
-		find: findParam("jpg,jpeg,png,webp"),
+		find: findParam(imageInputTypes, imageInputTypes.join(",")),
 		size: param.optional(number, {
+			help: `maximum dimensions for each image. if provided, images larger than this number of pixels (along either axis), will be resized so that they fit into a square of this size.`,
 			validate: n => {
 				if (Number.isSafeInteger(n) && n > 0)
 					return n

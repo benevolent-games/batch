@@ -13,13 +13,21 @@ import {basicParams} from "../../common/params/basic-params.js"
 import {audioParams} from "../../common/params/audio-params.js"
 import {assertDirectories} from "../../tools/assert-directories.js"
 
+export const audioInputTypes = [
+	"wav",
+	"mp3",
+	"m4a",
+	"mka",
+	"ogg",
+]
+
 export const m4a = command({
 	help: `convert audio to m4a format, aac codec.`,
 	args: [],
 	params: {
 		...basicParams.required,
 		...audioParams.required,
-		find: findParam("wav,mp3,m4a,ogg"),
+		find: findParam(audioInputTypes, audioInputTypes.join(",")),
 		...audioParams.remaining,
 		...basicParams.remaining,
 	},
