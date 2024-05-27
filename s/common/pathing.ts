@@ -1,8 +1,9 @@
 
 import path from "path"
 import {globby} from "globby"
+import {ExecutionError} from "@benev/argv"
+
 import {replaceExtension} from "../tools/replace-extension.js"
-import { ExecutionError } from "@benev/argv"
 
 export const pathing = async(extension: string, params: {
 		in: string
