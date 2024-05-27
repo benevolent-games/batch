@@ -7,24 +7,29 @@ import {GlbIo} from "./parts/glb_io.js"
 import {human} from "../../tools/human.js"
 import {Logger} from "../../common/logger.js"
 import {pathing} from "../../common/pathing.js"
-import {tiers, TierName} from "./parts/tiers.js"
 import {isDryRun} from "../../tools/is-dry-run.js"
 import {concurrently} from "../../tools/concurrently.js"
 import {findParam} from "../../common/params/find-param.js"
 import {prepareLogger} from "../../common/prepare-logger.js"
 import {basicParams} from "../../common/params/basic-params.js"
 import {assertDirectories} from "../../tools/assert-directories.js"
+import {tiers, TierName, TextureFormat, textureFormats} from "./parts/tiers.js"
 
 export const glb = command({
 	help: `optimize and process glbs`,
 	args: [],
 	params: {
 		...basicParams.required,
-		find: findParam("glb"),
-		tier: param.required<TierName>(
+		"tier": param.required<TierName>(
 			string as Type<TierName>,
 			choice(Object.keys(tiers) as TierName[])
 		),
+		"texture-format": param.default<TextureFormat>(
+			string as Type<TextureFormat>,
+			"webp",
+			choice(textureFormats as TextureFormat[]),
+		),
+		"find": findParam("glb"),
 		...basicParams.remaining,
 	},
 	execute: async({params}) => {
@@ -44,7 +49,9 @@ export const glb = command({
 				inpath,
 				outpath,
 				logger,
-				transforms: tiers[params.tier],
+				transforms: tiers[params.tier]({
+					textureFormat: params["texture-format"],
+				}),
 			})
 		)
 

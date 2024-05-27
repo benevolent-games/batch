@@ -9,44 +9,52 @@ import {delete_all_normal_maps} from "./transforms/delete_all_normal_maps.js"
 
 export type Tiers = typeof tiers
 export type TierName = keyof Tiers
+export type Tier = ({}: TierOptions) => Transform[]
+export type TierOptions = {textureFormat: TextureFormat}
+export type TextureFormat = "webp" | "jpeg" | "png" | "avif"
+export const textureFormats: TextureFormat[] = ["webp", "jpeg", "png", "avif"]
+
+export function asTier(tier: Tier) {
+	return tier
+}
 
 export const tiers = {
 
-	fancy: [
+	fancy: asTier(({textureFormat}) => [
 		dedup(),
 		textureCompress({
 			encoder: sharp,
-			targetFormat: "webp",
-			resize: [1024, 1024],
 			quality: 90,
+			resize: [1024, 1024],
+			targetFormat: textureFormat,
 		}),
 		...std_transforms,
-	],
+	]),
 
-	mid: [
+	mid: asTier(({textureFormat}) => [
 		dedup(),
 		textureCompress({
 			encoder: sharp,
-			targetFormat: "webp",
-			resize: [512, 512],
 			quality: 90,
+			resize: [512, 512],
+			targetFormat: textureFormat,
 		}),
 		delete_meshes("::lod=0"),
 		...std_transforms,
-	],
+	]),
 
-	potato: [
+	potato: asTier(({textureFormat}) => [
 		dedup(),
 		textureCompress({
 			encoder: sharp,
-			targetFormat: "webp",
-			resize: [128, 128],
 			quality: 90,
+			resize: [128, 128],
+			targetFormat: textureFormat,
 		}),
 		delete_meshes("::lod=0", "::lod=1"),
 		delete_all_normal_maps(),
 		...std_transforms,
-	],
+	]),
 
-} satisfies Record<string, Transform[]>
+} satisfies Record<string, (...args: any[]) => Transform[]>
 

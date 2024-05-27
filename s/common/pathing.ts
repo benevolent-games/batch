@@ -37,10 +37,12 @@ async function planPaths({
 		}
 	}): Promise<[string, string][]> {
 
-	console.log(inputs)
+	const extensionGlob = inputs.extensions.length > 1
+		? `{${inputs.extensions.join(",")}}`
+		: inputs.extensions[0]
 
 	const found = await globby(
-		[`**/*.{${inputs.extensions.join(",")}}`],
+		[`**/*.${extensionGlob}`],
 		{cwd: path.resolve(inputs.directory)},
 	)
 
