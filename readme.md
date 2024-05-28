@@ -70,5 +70,6 @@ read the `--help` pages for more info.
 ## made with open source love
 - post an issue if you have any questions or comments
 - i've started by adding the formats i need -- please consider creating pull requests to add support for new formats
+- batch's cli is built with [@benev/argv](https://www.npmjs.com/package/@benev/argv)
 - 🌠 gimme a star on github if you like this project
 
