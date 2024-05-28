@@ -35,6 +35,7 @@ export const basicParams = {
 			param.default(number, availableParallelism().toString(), {
 				help: `
 					how many operations to run simultaneously.
+					the default number is automatically detected from your system.
 					a higher number will gobble up more memory, but it might make things go faster.
 				`,
 				validate: n => {
