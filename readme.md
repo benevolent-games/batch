@@ -18,6 +18,10 @@
 ![](https://imgur.com/Y4r1zh0.png)
 
 - after running the command, you should see this help page.
+- ask for --help about each specific command for more details, eg
+  ```sh
+  npx @benev/batch images webp --help
+  ```
 
 <br/>
 
