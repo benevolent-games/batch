@@ -65,3 +65,10 @@ read the `--help` pages for more info.
 - that's basically what's up
 - for coordinating multiple build steps, look into [npm-run-all](https://www.npmjs.com/package/npm-run-all), i use it all the time
 
+<br/>
+
+## made with open source love
+- post an issue if you have any questions or comments
+- i've started by adding the formats i need -- please consider creating pull requests to add support for new formats
+- 🌠 gimme a star on github if you like this project
+
