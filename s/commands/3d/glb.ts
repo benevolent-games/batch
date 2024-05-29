@@ -76,9 +76,8 @@ export async function convert_glb({
 		const original = await io.read(inpath)
 		await original.document.transform(dedup())
 
-		const document = original.document
 		// const document = cloneDocument(original.document)
-
+		const document = original.document
 		await document.transform(...transforms)
 
 		const report = await io.write(outpath, document)

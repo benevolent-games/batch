@@ -81,7 +81,6 @@ async function convert_webp_image({
 	}) {
 
 	logger.in(inpath)
-	logger.out(outpath)
 
 	return pipe(sharp(inpath))
 		.to(img => img.rotate())
@@ -97,7 +96,11 @@ async function convert_webp_image({
 			quality,
 			alphaQuality: quality,
 		}))
-		.to(img => img.toFile(outpath))
+		.to(img => {
+			const result = img.toFile(outpath)
+			logger.out(outpath)
+			return result
+		})
 		.done()
 }
 

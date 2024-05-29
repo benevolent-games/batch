@@ -67,10 +67,8 @@ async function convert_m4a_audio({
 		logger: Logger
 	}) {
 
-	logger.in(inpath)
-	logger.out(outpath)
-
 	try {
+		logger.in(inpath)
 		await $`
 			${ffmpeg} \\
 				-i ${inpath} \\
@@ -81,6 +79,7 @@ async function convert_m4a_audio({
 				-loglevel error \\
 				${outpath}
 		`.quiet()
+		logger.out(outpath)
 	}
 	catch(error) {
 		if (error instanceof ProcessOutput)
