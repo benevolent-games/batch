@@ -22,7 +22,7 @@
 		"test-old": "rm -rf x/assets && node x/cli.js --in assets --out x/assets --format jpg && if [ ! -f 'x/assets/house.jpg' ]; then echo 'expected to find house.jpg, but it was not found'; exit 1; else exit 0; fi"
 	},
 	"dependencies": {
-		"@benev/argv": "^0.3.2",
+		"@benev/argv": "^0.3.3",
 		"@gltf-transform/cli": "^4.0.1",
 		"@gltf-transform/core": "^4.0.1",
 		"@gltf-transform/extensions": "^4.0.1",
