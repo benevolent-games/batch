@@ -8,7 +8,7 @@ export function delete_meshes(...selectors: string[]) {
 			const hasSelector = selectors.some(selector => name.includes(selector))
 
 			if (hasSelector)
-				node.dispose()
+				node.setMesh(null)
 		}
 	}
 }
